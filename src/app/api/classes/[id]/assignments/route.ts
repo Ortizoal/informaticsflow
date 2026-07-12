@@ -25,6 +25,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         groupCount: groupCount || null,
         groupSize: groupSize || null,
         dueDate: dueDate ? new Date(dueDate).toISOString() : null,
+        createdBy: session.user.id,
         classId: id,
       },
     })

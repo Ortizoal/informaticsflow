@@ -35,7 +35,7 @@ export default async function AssignmentDetailPage({
     <div>
       <div className="mb-6">
         <Link
-          href={`/repo/classes/`}
+          href={`/rep/classes/${params.id}`}
           className="text-sm text-blue-600 hover:underline mb-2 inline-block"
         >
           &larr; Back to class
