@@ -16,14 +16,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Email and password required' }, { status: 400 })
     }
 
-    const existing = db.user.findUnique({ where: { email } })
+    const existing = await db.user.findUnique({ where: { email } })
     if (existing) {
       return NextResponse.json({ error: 'Email already registered' }, { status: 400 })
     }
 
     const hashed = hashPassword(password)
 
-    const user = db.user.create({
+    const user = await db.user.create({
       data: {
         name: name || null,
         email,

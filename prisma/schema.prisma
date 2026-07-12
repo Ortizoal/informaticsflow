@@ -1,0 +1,147 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String       @id @default(cuid())
+  name          String?
+  email         String       @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  role          String       @default("student")
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  classes       Class[]
+  enrollments   Enrollment[]
+  assignments   Assignment[]
+  groupMembers  GroupMember[]
+  quizAttempts  QuizAttempt[]
+}
+
+model Class {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  joinCode    String   @unique
+  repId       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  rep          User         @relation(fields: [repId], references: [id])
+  enrollments  Enrollment[]
+  assignments  Assignment[]
+  files        File[]
+  quizzes      Quiz[]
+}
+
+model Enrollment {
+  id        String   @id @default(cuid())
+  userId    String
+  classId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id])
+  class Class @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, classId])
+}
+
+model Assignment {
+  id            String   @id @default(cuid())
+  title         String
+  description   String?
+  classId       String
+  groupCount    Int?
+  groupSize     Int?
+  createdBy     String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  class  Class   @relation(fields: [classId], references: [id], onDelete: Cascade)
+  groups Group[]
+}
+
+model Group {
+  id           String   @id @default(cuid())
+  name         String
+  assignmentId String
+  createdAt    DateTime @default(now())
+
+  assignment Assignment      @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  members    GroupMember[]
+}
+
+model GroupMember {
+  id        String   @id @default(cuid())
+  groupId   String
+  userId    String
+  createdAt DateTime @default(now())
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@unique([groupId, userId])
+}
+
+model File {
+  id          String   @id @default(cuid())
+  name        String
+  type        String
+  url         String
+  size        Int?
+  classId     String
+  uploadedBy  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  class       Class  @relation(fields: [classId], references: [id], onDelete: Cascade)
+  sourceFor   Quiz[]
+}
+
+model Quiz {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  classId     String
+  sourceFileId String?
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  class      Class          @relation(fields: [classId], references: [id], onDelete: Cascade)
+  sourceFile File?          @relation(fields: [sourceFileId], references: [id])
+  questions  Question[]
+  attempts   QuizAttempt[]
+}
+
+model Question {
+  id        String  @id @default(cuid())
+  text      String
+  type      String
+  options   Json?
+  answer    String
+  quizId    String
+  createdAt DateTime @default(now())
+
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+}
+
+model QuizAttempt {
+  id        String   @id @default(cuid())
+  quizId    String
+  userId    String
+  score     Int?
+  maxScore  Int?
+  answers   Json?
+  createdAt DateTime @default(now())
+
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
+}

@@ -12,15 +12,18 @@ export default async function StudentQuizPage({
 
   const quiz = await prisma.quiz.findUnique({
     where: { id: params.quizId },
-    include: {
-      questions: true,
-      class: {
-        include: { enrollments: { where: { userId: session?.user?.id } } },
-      },
-    },
+    include: { questions: true },
   })
 
-  if (!quiz || quiz.classId !== params.id || quiz.class.enrollments.length === 0) {
+  if (!quiz || quiz.classId !== params.id) {
+    notFound()
+  }
+
+  const enrollment = await prisma.enrollment.findUnique({
+    where: { userId_classId: { userId: session?.user?.id || '', classId: params.id } },
+  })
+
+  if (!enrollment) {
     notFound()
   }
 

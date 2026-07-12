@@ -22,12 +22,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     })
 
     if (questions && questions.length > 0) {
-      db.question.createMany({
+      await db.question.createMany({
         data: questions.map((q: any) => ({
           quizId: quiz.id,
           text: q.text,
           type: q.type,
-          options: q.options ? JSON.stringify(q.options) : null,
+          options: q.options || undefined,
           answer: q.answer,
         })),
       })

@@ -1,5 +1,6 @@
 ﻿import { NextAuthConfig } from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
+import Google from 'next-auth/providers/google'
 import { db } from './db'
 import { timingSafeEqual, scryptSync, randomBytes } from 'crypto'
 
@@ -22,12 +23,16 @@ export const authConfig: NextAuthConfig = {
         if (!credentials?.email || !credentials?.password) return null
         const email = credentials.email as string
         const password = credentials.password as string
-        const user = db.user.findUnique({ where: { email } })
+        const user = await db.user.findUnique({ where: { email } })
         if (!user || !user.password) return null
         const isValid = verifyPassword(password, user.password)
         if (!isValid) return null
         return { id: user.id, email: user.email, name: user.name, image: user.image, role: user.role }
       },
+    }),
+    Google({
+      clientId: process.env.AUTH_GOOGLE_ID!,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET!,
     }),
   ],
   callbacks: {
@@ -38,6 +43,24 @@ export const authConfig: NextAuthConfig = {
     async session({ session, token }) {
       if (session.user) { session.user.id = token.id as string; session.user.role = token.role as string }
       return session
+    },
+    async signIn({ account, profile }) {
+      if (account?.provider === 'google') {
+        const email = profile?.email as string
+        if (!email) return false
+        const existing = await db.user.findUnique({ where: { email } })
+        if (!existing) {
+          await db.user.create({
+            data: {
+              email,
+              name: profile?.name as string || email.split('@')[0],
+              image: profile?.image as string || null,
+              role: 'student',
+            },
+          })
+        }
+      }
+      return true
     },
   },
   pages: { signIn: '/login' },

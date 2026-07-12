@@ -35,20 +35,19 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       const groups = assignGroups(studentIds, groupCount, groupSize)
 
       for (let i = 0; i < groups.length; i++) {
-        const group = db.group.create({
+        const group = await db.group.create({
           data: {
             name: `Group ${i + 1}`,
             assignmentId: assignment.id,
           },
         })
 
-        db.groupMember.createMany({
+        await db.groupMember.createMany({
           data: groups[i].map((userId) => ({ groupId: group.id, userId })),
         })
       }
-    }
 
-    const allGroups = db.group.findMany({
+    const allGroups = await db.group.findMany({
       where: { assignmentId: assignment.id },
       include: { members: true },
     })
