@@ -12,13 +12,13 @@ export async function GET(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const assignment = db.assignment.findUnique({ where: { id: assignmentId } })
+  const assignment = await db.assignment.findUnique({ where: { id: assignmentId } })
 
   if (!assignment || assignment.classId !== id) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
-  const groups = db.group.findMany({
+  const groups = await db.group.findMany({
     where: { assignmentId: assignmentId },
     include: { members: true },
   })
