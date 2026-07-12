@@ -12,7 +12,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   try {
     const { title, description, sourceFileId, questions } = await req.json()
 
-    const quiz = db.quiz.create({
+    const quiz = await db.quiz.create({
       data: {
         title,
         description,
@@ -33,7 +33,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       })
     }
 
-    const savedQuestions = db.question.findMany({ where: { quizId: quiz.id } })
+    const savedQuestions = await db.question.findMany({ where: { quizId: quiz.id } })
 
     return NextResponse.json({ ...quiz, questions: savedQuestions })
   } catch (error) {

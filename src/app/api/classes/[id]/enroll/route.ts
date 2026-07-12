@@ -11,7 +11,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
   const { joinCode } = await req.json()
 
-  const cls = db.class.findUnique({ where: { id: id } })
+  const cls = await db.class.findUnique({ where: { id: id } })
   if (!cls) {
     return NextResponse.json({ error: 'Class not found' }, { status: 404 })
   }
@@ -20,14 +20,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     return NextResponse.json({ error: 'Invalid join code' }, { status: 400 })
   }
 
-  const existing = db.enrollment.findMany({
+  const existing = await db.enrollment.findMany({
     where: { userId: session.user.id, classId: id },
   })
   if (existing.length > 0) {
     return NextResponse.json({ error: 'Already enrolled' }, { status: 400 })
   }
 
-  const enrollment = db.enrollment.create({
+  const enrollment = await db.enrollment.create({
     data: { userId: session.user.id, classId: id },
   })
 
