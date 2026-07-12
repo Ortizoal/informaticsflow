@@ -20,7 +20,6 @@ model User {
 
   classes       Class[]
   enrollments   Enrollment[]
-  assignments   Assignment[]
   groupMembers  GroupMember[]
   quizAttempts  QuizAttempt[]
 }
