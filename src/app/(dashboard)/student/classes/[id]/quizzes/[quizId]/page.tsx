@@ -31,7 +31,7 @@ export default async function StudentQuizPage({
     <div>
       <h1 className="text-2xl font-bold mb-2">{quiz.title}</h1>
       {quiz.description && <p className="text-gray-500 mb-6">{quiz.description}</p>}
-      <QuizTaker quiz={quiz} />
+      <QuizTaker quiz={quiz as any} />
     </div>
   )
 }
