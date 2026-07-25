@@ -13,34 +13,43 @@ interface Question {
 export default function QuizTaker({ quiz }: { quiz: { id: string; questions: Question[] } }) {
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [submitted, setSubmitted] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [score, setScore] = useState(0)
+  const [error, setError] = useState('')
 
   function handleAnswer(questionId: string, answer: string) {
     setAnswers((prev) => ({ ...prev, [questionId]: answer }))
   }
 
   async function handleSubmit() {
+    setSaving(true)
+    setError('')
+
     let correct = 0
     for (const q of quiz.questions) {
       if (answers[q.id]?.toLowerCase().trim() === q.answer.toLowerCase().trim()) {
         correct++
       }
     }
-    setScore(correct)
-    setSubmitted(true)
 
     try {
-      await fetch(`/api/quizzes/${quiz.id}/attempt`, {
+      const res = await fetch(`/api/quizzes/${quiz.id}/attempt`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          quizId: quiz.id,
           score: correct,
           maxScore: quiz.questions.length,
           answers,
         }),
       })
-    } catch {}
+      if (!res.ok) throw new Error('Failed to save attempt')
+    } catch (e: any) {
+      setError(e.message || 'Something went wrong')
+    }
+
+    setScore(correct)
+    setSaving(false)
+    setSubmitted(true)
   }
 
   if (submitted) {
@@ -76,7 +85,7 @@ export default function QuizTaker({ quiz }: { quiz: { id: string; questions: Que
 
           {q.type === 'mcq' && q.options && (
             <div className="space-y-2">
-              {JSON.parse(q.options).map((opt: string, oi: number) => (
+              {(typeof q.options === 'string' ? JSON.parse(q.options) : q.options).map((opt: string, oi: number) => (
                 <label
                   key={oi}
                   className="block p-3 rounded-lg border text-sm cursor-pointer transition"
@@ -106,12 +115,14 @@ export default function QuizTaker({ quiz }: { quiz: { id: string; questions: Que
         </div>
       ))}
 
+      {error && <p className="text-sm text-red-600 text-center">{error}</p>}
+
       <button
         onClick={handleSubmit}
-        disabled={Object.keys(answers).length !== quiz.questions.length}
+        disabled={saving || Object.keys(answers).length !== quiz.questions.length}
         className="w-full bg-blue-600 text-white rounded-lg py-3 font-medium hover:bg-blue-700 transition disabled:opacity-50"
       >
-        Submit Answers
+        {saving ? 'Saving...' : 'Submit Answers'}
       </button>
     </div>
   )

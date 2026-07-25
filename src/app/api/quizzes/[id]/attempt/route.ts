@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 
 export async function POST(
   req: Request,
@@ -19,13 +19,13 @@ export async function POST(
       return NextResponse.json({ error: 'Invalid score data' }, { status: 400 })
     }
 
-    const attempt = await db.quizAttempt.create({
+    const attempt = await prisma.quizAttempt.create({
       data: {
         quizId,
         userId: session.user.id,
         score,
         maxScore,
-        answers: answers || null,
+        answers: answers || undefined,
       },
     })
 
