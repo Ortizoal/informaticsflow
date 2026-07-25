@@ -1,6 +1,6 @@
 ﻿import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { assignGroups } from '@/lib/group-utils'
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -13,12 +13,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   try {
     const { title, description, groupCount, groupSize, dueDate } = await req.json()
 
-    const cls = await db.class.findUnique({ where: { id: id } })
+    const cls = await prisma.class.findUnique({ where: { id } })
     if (!cls || cls.repId !== session.user.id) {
+      console.warn('Create assignment denied:', { classId: id, repId: cls?.repId, userId: session.user.id })
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
-    const assignment = await db.assignment.create({
+    const assignment = await prisma.assignment.create({
       data: {
         title,
         description,
@@ -31,24 +32,24 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     })
 
     if (groupCount && groupSize) {
-      const enrollments = await db.enrollment.findMany({ where: { classId: id } })
-      const studentIds = enrollments.map((e: any) => e.userId)
+      const enrollments = await prisma.enrollment.findMany({ where: { classId: id } })
+      const studentIds = enrollments.map((e) => e.userId)
       const groups = assignGroups(studentIds, groupCount, groupSize)
 
       for (let i = 0; i < groups.length; i++) {
-        const group = await db.group.create({
+        const group = await prisma.group.create({
           data: {
             name: `Group ${i + 1}`,
             assignmentId: assignment.id,
           },
         })
 
-        await db.groupMember.createMany({
+        await prisma.groupMember.createMany({
           data: groups[i].map((userId) => ({ groupId: group.id, userId })),
         })
       }
 
-      const allGroups = await db.group.findMany({
+      const allGroups = await prisma.group.findMany({
         where: { assignmentId: assignment.id },
         include: { members: true },
       })

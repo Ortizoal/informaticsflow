@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { upload } from '@vercel/blob/client'
 
 interface Props {
   classId: string
@@ -27,22 +28,9 @@ export default function SubmissionForm({ classId, assignmentId, existing }: Prop
     setError('')
 
     try {
-      const tokenRes = await fetch('/api/upload', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pathname: file.name }),
-      })
-      if (!tokenRes.ok) {
-        const data = await tokenRes.json().catch(() => ({}))
-        throw new Error(data.error || 'Failed to get upload token')
-      }
-      const { clientToken } = await tokenRes.json()
-      if (!clientToken) throw new Error('No upload token received')
-
-      const { put } = await import('@vercel/blob/client')
-      const result = await put(file.name, file, {
+      const result = await upload(file.name, file, {
+        handleUploadUrl: '/api/upload',
         access: 'public',
-        token: clientToken,
       })
       setFileUrl(result.downloadUrl)
     } catch (err: any) {
