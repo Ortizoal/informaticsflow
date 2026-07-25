@@ -43,4 +43,9 @@ export const db = {
   quizAttempt: {
     create: (args: any) => prisma.quizAttempt.create(args),
   },
+  passwordResetToken: {
+    findUnique: (args: any) => prisma.passwordResetToken.findUnique(args),
+    create: (args: any) => prisma.passwordResetToken.create(args),
+    update: (args: any) => prisma.passwordResetToken.update(args),
+  },
 }
