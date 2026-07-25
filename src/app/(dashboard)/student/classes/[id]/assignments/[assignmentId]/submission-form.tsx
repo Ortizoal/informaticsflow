@@ -26,22 +26,17 @@ export default function SubmissionForm({ classId, assignmentId, existing }: Prop
     setUploading(true)
     setError('')
 
-    const res = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, { method: 'POST' })
+    const fd = new FormData()
+    fd.append('file', file)
+
+    const res = await fetch('/api/upload', { method: 'POST', body: fd })
     if (!res.ok) {
-      setError('Failed to get upload URL')
-      setUploading(false)
-      return
-    }
-
-    const { url, downloadUrl } = await res.json()
-
-    const uploadRes = await fetch(url, { method: 'PUT', body: file })
-    if (!uploadRes.ok) {
       setError('Failed to upload file')
       setUploading(false)
       return
     }
 
+    const { downloadUrl } = await res.json()
     setFileUrl(downloadUrl)
     setUploading(false)
   }

@@ -8,12 +8,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { searchParams } = new URL(req.url)
-  const filename = searchParams.get('filename')
-  if (!filename) {
-    return NextResponse.json({ error: 'filename required' }, { status: 400 })
+  const formData = await req.formData()
+  const file = formData.get('file') as File | null
+  if (!file) {
+    return NextResponse.json({ error: 'file required' }, { status: 400 })
   }
 
-  const blob = await put(filename, undefined, { access: 'public' })
-  return NextResponse.json(blob)
+  const buffer = Buffer.from(await file.arrayBuffer())
+  const blob = await put(file.name, buffer, { access: 'public' })
+  return NextResponse.json({ url: blob.url, downloadUrl: blob.downloadUrl })
 }
