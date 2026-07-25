@@ -34,7 +34,7 @@ export default function NewAssignmentPage({ params }: { params: { id: string } }
       router.push(`/rep/classes/${params.id}`)
     } else {
       const data = await res.json()
-      setError(data.error || 'Failed to create assignment')
+      setError(JSON.stringify(data))
     }
   }
 
