@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 export default function SubmissionForm({
@@ -19,23 +19,28 @@ export default function SubmissionForm({
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
+  useEffect(() => {
+    setContent(existingContent || '')
+  }, [existingContent])
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setSubmitting(true)
     setError('')
 
-    const method = existingContent ? 'PATCH' : 'POST'
-    const body: any = { content }
-    if (existingContent) {
+    let submissionId: string | null = null
+
+    if (existingContent !== null) {
       const getRes = await fetch(`/api/classes/${classId}/assignments/${assignmentId}/submissions`)
-      const subs = await getRes.json()
-      body.submissionId = subs[0]?.id
-      if (!body.submissionId) {
-        setError('Could not find your submission')
-        setSubmitting(false)
-        return
+      if (getRes.ok) {
+        const subs = await getRes.json()
+        submissionId = subs?.[0]?.id || null
       }
     }
+
+    const method = submissionId ? 'PATCH' : 'POST'
+    const body: any = { content }
+    if (submissionId) body.submissionId = submissionId
 
     const res = await fetch(`/api/classes/${classId}/assignments/${assignmentId}/submissions`, {
       method,
@@ -82,7 +87,7 @@ export default function SubmissionForm({
           disabled={submitting || !content.trim()}
           className="mt-3 w-full bg-blue-600 text-white rounded-lg py-2 text-sm font-medium hover:bg-blue-700 transition disabled:opacity-50"
         >
-          {submitting ? 'Saving...' : existingContent ? 'Update Submission' : 'Submit'}
+          {submitting ? 'Saving...' : existingContent !== null ? 'Update Submission' : 'Submit'}
         </button>
       </form>
     </div>

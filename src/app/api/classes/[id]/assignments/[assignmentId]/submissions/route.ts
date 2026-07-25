@@ -57,13 +57,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: 'Already submitted. Use PATCH to update.' }, { status: 409 })
   }
 
-  const { content } = await req.json()
+  const { content, fileUrl } = await req.json()
 
   const submission = await db.submission.create({
     data: {
       assignmentId,
       userId: session.user.id,
       content: content || null,
+      fileUrl: fileUrl || null,
     },
   })
 
