@@ -15,8 +15,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     const cls = await prisma.class.findUnique({ where: { id } })
     if (!cls || cls.repId !== session.user.id) {
-      console.warn('Create assignment denied:', { classId: id, repId: cls?.repId, userId: session.user.id })
-      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+      return NextResponse.json({
+        error: 'Access denied',
+        debug: { foundCls: !!cls, repId: cls?.repId, userId: session.user.id }
+      }, { status: 403 })
     }
 
     const assignment = await prisma.assignment.create({
