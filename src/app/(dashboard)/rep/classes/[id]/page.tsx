@@ -8,9 +8,11 @@ export default async function RepClassDetailPage({
 }: {
   params: { id: string }
 }) {
+  const id = params.id
+  if (!id) return notFound()
   const session = await auth()
   const cls = await prisma.class.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       _count: { select: { enrollments: true } },
       assignments: { orderBy: { createdAt: 'desc' }, take: 10 },
@@ -37,21 +39,21 @@ export default async function RepClassDetailPage({
 
       <div className="grid gap-6 md:grid-cols-3 mb-8">
         <Link
-          href={`/rep/classes/`}
+          href={`/rep/classes/${id}/assignments/new`}
           className="bg-white rounded-xl shadow-sm border p-4 hover:shadow-md transition text-center"
         >
           <div className="text-2xl mb-1">+</div>
           <div className="font-medium">New Assignment</div>
         </Link>
         <Link
-          href={`/rep/classes/`}
+          href={`/rep/classes/${id}/files`}
           className="bg-white rounded-xl shadow-sm border p-4 hover:shadow-md transition text-center"
         >
           <div className="text-2xl mb-1">+</div>
           <div className="font-medium">Upload File</div>
         </Link>
         <Link
-          href={`/rep/classes/`}
+          href={`/rep/classes/${id}/quizzes/new`}
           className="bg-white rounded-xl shadow-sm border p-4 hover:shadow-md transition text-center"
         >
           <div className="text-2xl mb-1">+</div>
@@ -69,7 +71,7 @@ export default async function RepClassDetailPage({
               {cls.assignments.map((a) => (
                 <Link
                   key={a.id}
-                  href={`/rep/classes/`}
+                  href={`/rep/classes/${id}/assignments/${a.id}`}
                   className="block bg-white rounded-lg shadow-sm border p-3 hover:shadow-md transition"
                 >
                   <div className="font-medium">{a.title}</div>
