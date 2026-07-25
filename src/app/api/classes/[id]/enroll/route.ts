@@ -6,8 +6,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   try {
     const { id } = await params
     const session = await auth()
-    if (!session?.user) {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const dbUser = await db.user.findUnique({ where: { email: session.user.email } })
+    if (!dbUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
     const { joinCode } = await req.json()
@@ -22,14 +27,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     const existing = await db.enrollment.findMany({
-      where: { userId: session.user.id, classId: id },
+      where: { userId: dbUser.id, classId: id },
     })
     if (existing.length > 0) {
       return NextResponse.json({ error: 'Already enrolled' }, { status: 400 })
     }
 
     const enrollment = await db.enrollment.create({
-      data: { userId: session.user.id, classId: id },
+      data: { userId: dbUser.id, classId: id },
     })
 
     return NextResponse.json(enrollment)

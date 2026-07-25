@@ -37,14 +37,7 @@ export const authConfig: NextAuthConfig = {
   ],
   callbacks: {
     async jwt({ token, user }) {
-      if (user) {
-        if (user.email) {
-          const dbUser = await db.user.findUnique({ where: { email: user.email } })
-          if (dbUser) { token.id = dbUser.id; token.role = dbUser.role }
-        } else {
-          token.id = user.id; token.role = (user as any).role
-        }
-      }
+      if (user) { token.id = user.id; token.role = (user as any).role }
       return token
     },
     async session({ session, token }) {
