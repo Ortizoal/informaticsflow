@@ -4,15 +4,16 @@ import { db } from '@/lib/db'
 
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: quizId } = await params
     const session = await auth()
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
 
-    const { quizId, score, maxScore, answers } = await req.json()
+    const { score, maxScore, answers } = await req.json()
 
     if (typeof score !== 'number' || typeof maxScore !== 'number') {
       return NextResponse.json({ error: 'Invalid score data' }, { status: 400 })
