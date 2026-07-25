@@ -41,12 +41,16 @@ export default async function StudentClassDetailPage({
           ) : (
             <div className="space-y-2">
               {cls.assignments.map((a) => (
-                <div key={a.id} className="bg-white rounded-lg shadow-sm border p-3">
+                <Link
+                  key={a.id}
+                  href={`/student/classes/${id}/assignments/${a.id}`}
+                  className="block bg-white rounded-lg shadow-sm border p-3 hover:shadow-md transition"
+                >
                   <div className="font-medium text-sm">{a.title}</div>
                   {a.dueDate && (
                     <div className="text-xs text-gray-400">Due: {new Date(a.dueDate).toLocaleDateString()}</div>
                   )}
-                </div>
+                </Link>
               ))}
             </div>
           )}
