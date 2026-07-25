@@ -2,7 +2,6 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { upload } from '@vercel/blob/client'
 
 interface Props {
   classId: string
@@ -28,13 +27,31 @@ export default function SubmissionForm({ classId, assignmentId, existing }: Prop
     setError('')
 
     try {
-      const result = await upload(file.name, file, {
-        handleUploadUrl: '/api/upload',
-        access: 'public',
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 30000)
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+        signal: controller.signal,
       })
-      setFileUrl(result.downloadUrl)
+      clearTimeout(timeout)
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Upload failed')
+      }
+      const data = await res.json()
+      setFileUrl(data.downloadUrl)
     } catch (err: any) {
-      setError(err?.message || 'Failed to upload file')
+      if (err.name === 'AbortError') {
+        setError('Upload timed out after 30 seconds')
+      } else {
+        setError(err?.message || 'Failed to upload file')
+      }
     } finally {
       setUploading(false)
     }

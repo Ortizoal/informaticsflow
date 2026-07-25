@@ -17,6 +17,7 @@ export default function NewQuizPage({ params }: { params: { id: string } }) {
   const [questions, setQuestions] = useState<Question[]>([])
   const [generating, setGenerating] = useState(false)
   const [genError, setGenError] = useState('')
+  const [submitError, setSubmitError] = useState('')
   const [isManual, setIsManual] = useState(true)
 
   function addQuestion() {
@@ -61,6 +62,7 @@ export default function NewQuizPage({ params }: { params: { id: string } }) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    setSubmitError('')
 
     const res = await fetch(`/api/classes/${params.id}/quizzes`,  {
       method: 'POST',
@@ -69,8 +71,10 @@ export default function NewQuizPage({ params }: { params: { id: string } }) {
     })
 
     if (res.ok) {
-      const data = await res.json()
       router.push(`/rep/classes/${params.id}`)
+    } else {
+      const data = await res.json().catch(() => ({}))
+      setSubmitError(data.error || 'Failed to save quiz')
     }
   }
 
@@ -96,6 +100,10 @@ export default function NewQuizPage({ params }: { params: { id: string } }) {
 
       {genError && (
         <div className="bg-red-50 text-red-700 p-3 rounded-lg mb-4 text-sm">{genError}</div>
+      )}
+
+      {submitError && (
+        <div className="bg-red-50 text-red-700 p-3 rounded-lg mb-4 text-sm">{submitError}</div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">

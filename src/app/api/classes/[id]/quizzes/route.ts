@@ -1,6 +1,6 @@
 ﻿import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -11,8 +11,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
   try {
     const { title, description, sourceFileId, questions } = await req.json()
+    if (!title) {
+      return NextResponse.json({ error: 'Title is required' }, { status: 400 })
+    }
 
-    const quiz = await db.quiz.create({
+    const quiz = await prisma.quiz.create({
       data: {
         title,
         description,
@@ -22,8 +25,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     })
 
     if (questions && questions.length > 0) {
-      await db.question.createMany({
-        data: questions.map((q: any) => ({
+      await prisma.question.createMany({
+        data: questions.map((q: { text: string; type: string; options?: string[]; answer: string }) => ({
           quizId: quiz.id,
           text: q.text,
           type: q.type,
@@ -33,7 +36,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       })
     }
 
-    const savedQuestions = await db.question.findMany({ where: { quizId: quiz.id } })
+    const savedQuestions = await prisma.question.findMany({ where: { quizId: quiz.id } })
 
     return NextResponse.json({ ...quiz, questions: savedQuestions })
   } catch (error) {
