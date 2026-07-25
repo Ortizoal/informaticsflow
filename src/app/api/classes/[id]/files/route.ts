@@ -32,13 +32,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       contentType: file.type || 'application/octet-stream',
     })
 
-    const fileRecord = db.file.create({
+    const fileRecord = await db.file.create({
       data: {
         name: file.name,
         type: ext || 'unknown',
         url: blob.url,
         size: file.size,
         classId: id,
+        uploadedBy: session.user.id,
       },
     })
 

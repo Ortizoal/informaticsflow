@@ -13,24 +13,25 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   try {
     const { title, description, groupCount, groupSize, dueDate } = await req.json()
 
-    const cls = db.class.findUnique({ where: { id: id } })
+    const cls = await db.class.findUnique({ where: { id: id } })
     if (!cls || cls.repId !== session.user.id) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
-    const assignment = db.assignment.create({
+    const assignment = await db.assignment.create({
       data: {
         title,
         description,
         groupCount: groupCount || null,
         groupSize: groupSize || null,
         dueDate: dueDate ? new Date(dueDate).toISOString() : null,
+        createdBy: session.user.id,
         classId: id,
       },
     })
 
     if (groupCount && groupSize) {
-      const enrollments = db.enrollment.findMany({ where: { classId: id } })
+      const enrollments = await db.enrollment.findMany({ where: { classId: id } })
       const studentIds = enrollments.map((e: any) => e.userId)
       const groups = assignGroups(studentIds, groupCount, groupSize)
 
@@ -47,12 +48,15 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         })
       }
 
-    const allGroups = await db.group.findMany({
-      where: { assignmentId: assignment.id },
-      include: { members: true },
-    })
+      const allGroups = await db.group.findMany({
+        where: { assignmentId: assignment.id },
+        include: { members: true },
+      })
 
-    return NextResponse.json({ ...assignment, groups: allGroups })
+      return NextResponse.json({ ...assignment, groups: allGroups })
+    }
+
+    return NextResponse.json({ ...assignment })
   } catch (error) {
     console.error('Create assignment error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
