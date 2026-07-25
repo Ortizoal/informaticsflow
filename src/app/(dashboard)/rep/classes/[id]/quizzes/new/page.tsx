@@ -15,6 +15,7 @@ export default function NewQuizPage({ params }: { params: { id: string } }) {
   const [title, setTitle] = useState('')
   const [questions, setQuestions] = useState<Question[]>([])
   const [generating, setGenerating] = useState(false)
+  const [genError, setGenError] = useState('')
   const [isManual, setIsManual] = useState(true)
 
   function addQuestion() {
@@ -33,12 +34,13 @@ export default function NewQuizPage({ params }: { params: { id: string } }) {
 
   async function generateFromFile() {
     setGenerating(true)
+    setGenError('')
     try {
       const res = await fetch('/api/ai/generate-questions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          content: 'Sample educational content. Replace with actual extracted text from uploaded files.',
+          classId: params.id,
           type: 'quiz',
           count: 5,
         }),
@@ -47,8 +49,12 @@ export default function NewQuizPage({ params }: { params: { id: string } }) {
       if (data.questions) {
         setQuestions(data.questions)
         setIsManual(false)
+      } else {
+        setGenError(data.error || 'Generation failed')
       }
-    } catch {}
+    } catch {
+      setGenError('Failed to connect to generation service')
+    }
     setGenerating(false)
   }
 
@@ -86,6 +92,10 @@ export default function NewQuizPage({ params }: { params: { id: string } }) {
           {generating ? 'Generating...' : 'Generate from Files'}
         </button>
       </div>
+
+      {genError && (
+        <div className="bg-red-50 text-red-700 p-3 rounded-lg mb-4 text-sm">{genError}</div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>

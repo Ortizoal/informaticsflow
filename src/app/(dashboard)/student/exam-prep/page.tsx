@@ -8,18 +8,20 @@ export default function ExamPrepPage() {
   const classId = searchParams.get('classId') || ''
   const [questions, setQuestions] = useState<any[]>([])
   const [generating, setGenerating] = useState(false)
+  const [genError, setGenError] = useState('')
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [showResults, setShowResults] = useState(false)
   const [score, setScore] = useState(0)
 
   async function generateQuestions() {
     setGenerating(true)
+    setGenError('')
     try {
       const res = await fetch('/api/ai/generate-questions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          content: 'Generate exam prep questions for a general course. Cover key concepts and definitions.',
+          classId,
           type: 'exam',
           count: 10,
         }),
@@ -29,8 +31,12 @@ export default function ExamPrepPage() {
         setQuestions(data.questions)
         setAnswers({})
         setShowResults(false)
+      } else {
+        setGenError(data.error || 'Generation failed')
       }
-    } catch {}
+    } catch {
+      setGenError('Failed to connect to generation service')
+    }
     setGenerating(false)
   }
 
@@ -58,6 +64,9 @@ export default function ExamPrepPage() {
           <p className="text-gray-500 mb-4">
             Generate practice questions based on your course materials.
           </p>
+          {genError && (
+            <div className="bg-red-50 text-red-700 p-3 rounded-lg mb-4 text-sm max-w-md mx-auto">{genError}</div>
+          )}
           <button
             onClick={generateQuestions}
             disabled={generating}
