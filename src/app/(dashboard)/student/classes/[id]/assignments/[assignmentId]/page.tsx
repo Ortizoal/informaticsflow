@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import SubmissionForm from './submission-form'
 
 export default async function StudentAssignmentPage({
   params,
@@ -33,7 +34,6 @@ export default async function StudentAssignmentPage({
   const enrollment = await prisma.enrollment.findUnique({
     where: { userId_classId: { userId: session?.user?.id || '', classId: id } },
   })
-
   if (!enrollment) {
     notFound()
   }
@@ -41,6 +41,10 @@ export default async function StudentAssignmentPage({
   const myGroup = assignment.groups.find((g) =>
     g.members.some((m) => m.user.id === session?.user?.id)
   )
+
+  const submission = await prisma.submission.findUnique({
+    where: { assignmentId_userId: { assignmentId, userId: session?.user?.id || '' } },
+  })
 
   return (
     <div>
@@ -60,33 +64,45 @@ export default async function StudentAssignmentPage({
         </p>
       )}
 
-      {myGroup ? (
-        <div className="bg-white rounded-xl shadow-sm border p-5">
-          <h2 className="text-lg font-semibold mb-3">Your Group</h2>
-          <p className="text-sm text-blue-600 font-medium mb-3">{myGroup.name}</p>
-          <ul className="space-y-2">
-            {myGroup.members.map((m) => (
-              <li key={m.id} className="text-sm flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-blue-500" />
-                <span>{m.user.name || 'Unnamed'}</span>
-                {m.user.id === session?.user?.id && (
-                  <span className="text-xs text-gray-400">(you)</span>
-                )}
-                <span className="text-gray-400 ml-1">{m.user.email}</span>
-              </li>
-            ))}
-          </ul>
+      <div className="grid gap-6 md:grid-cols-2 mb-8">
+        {myGroup ? (
+          <div className="bg-white rounded-xl shadow-sm border p-5">
+            <h2 className="text-lg font-semibold mb-3">Your Group</h2>
+            <p className="text-sm text-blue-600 font-medium mb-3">{myGroup.name}</p>
+            <ul className="space-y-2">
+              {myGroup.members.map((m) => (
+                <li key={m.id} className="text-sm flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-blue-500" />
+                  <span>{m.user.name || 'Unnamed'}</span>
+                  {m.user.id === session?.user?.id && (
+                    <span className="text-xs text-gray-400">(you)</span>
+                  )}
+                  <span className="text-gray-400 ml-1">{m.user.email}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <div className="bg-white rounded-xl shadow-sm border p-5">
+            <h2 className="text-lg font-semibold mb-2">Your Group</h2>
+            <p className="text-sm text-gray-400">
+              {assignment.groups.length > 0
+                ? "You haven't been assigned to a group for this assignment."
+                : 'No groups have been created for this assignment yet.'}
+            </p>
+          </div>
+        )}
+
+        <div>
+          <h2 className="text-lg font-semibold mb-3">Your Submission</h2>
+          <SubmissionForm
+            assignmentId={assignmentId}
+            classId={id}
+            existingContent={submission?.content || null}
+            grade={submission?.grade ?? null}
+          />
         </div>
-      ) : (
-        <div className="bg-white rounded-xl shadow-sm border p-5">
-          <h2 className="text-lg font-semibold mb-2">Your Group</h2>
-          <p className="text-sm text-gray-400">
-            {assignment.groups.length > 0
-              ? "You haven't been assigned to a group for this assignment."
-              : 'No groups have been created for this assignment yet.'}
-          </p>
-        </div>
-      )}
+      </div>
     </div>
   )
 }
