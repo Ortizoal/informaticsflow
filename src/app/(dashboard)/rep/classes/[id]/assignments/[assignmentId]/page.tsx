@@ -116,6 +116,11 @@ export default async function AssignmentDetailPage({
                 {sub.content && (
                   <p className="text-sm text-gray-600 mt-2 whitespace-pre-wrap">{sub.content}</p>
                 )}
+                {sub.fileUrl && (
+                  <a href={sub.fileUrl} target="_blank" className="text-xs text-blue-600 underline mt-1 inline-block">
+                    View attachment
+                  </a>
+                )}
                 <p className="text-xs text-gray-400 mt-2">
                   Submitted {new Date(sub.createdAt).toLocaleDateString()}
                 </p>

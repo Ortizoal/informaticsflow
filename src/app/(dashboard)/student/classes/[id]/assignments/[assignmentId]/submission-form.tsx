@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 
 interface Props {
@@ -11,11 +11,40 @@ interface Props {
 
 export default function SubmissionForm({ classId, assignmentId, existing }: Props) {
   const [content, setContent] = useState(existing?.content || '')
+  const [file, setFile] = useState<File | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const [fileUrl, setFileUrl] = useState(existing?.fileUrl || '')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const alreadySubmitted = !!existing
+
+  const handleFileUpload = async () => {
+    if (!file) return
+    setUploading(true)
+    setError('')
+
+    const res = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, { method: 'POST' })
+    if (!res.ok) {
+      setError('Failed to get upload URL')
+      setUploading(false)
+      return
+    }
+
+    const { url, downloadUrl } = await res.json()
+
+    const uploadRes = await fetch(url, { method: 'PUT', body: file })
+    if (!uploadRes.ok) {
+      setError('Failed to upload file')
+      setUploading(false)
+      return
+    }
+
+    setFileUrl(downloadUrl)
+    setUploading(false)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -23,7 +52,7 @@ export default function SubmissionForm({ classId, assignmentId, existing }: Prop
     setError('')
 
     const method = alreadySubmitted ? 'PATCH' : 'POST'
-    const body: any = { content }
+    const body: any = { content, fileUrl: fileUrl || undefined }
     if (alreadySubmitted) {
       body.submissionId = existing!.id
     }
@@ -58,6 +87,33 @@ export default function SubmissionForm({ classId, assignmentId, existing }: Prop
           className="w-full border rounded-lg p-3 text-sm"
           placeholder="Type your answer here..."
         />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">File attachment</label>
+        <div className="flex items-center gap-3">
+          <input
+            ref={fileInputRef}
+            type="file"
+            onChange={(e) => setFile(e.target.files?.[0] || null)}
+            className="text-sm"
+          />
+          {file && !fileUrl && (
+            <button
+              type="button"
+              onClick={handleFileUpload}
+              disabled={uploading}
+              className="text-sm bg-gray-100 px-3 py-1 rounded hover:bg-gray-200 disabled:opacity-50"
+            >
+              {uploading ? 'Uploading...' : 'Upload'}
+            </button>
+          )}
+        </div>
+        {fileUrl && (
+          <p className="text-xs text-green-600 mt-1">
+            File attached: <a href={fileUrl} target="_blank" className="underline">{fileUrl.split('/').pop()}</a>
+          </p>
+        )}
       </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
