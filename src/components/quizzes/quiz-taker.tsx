@@ -1,7 +1,6 @@
 ﻿'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 
 interface Question {
   id: string
@@ -21,7 +20,7 @@ export default function QuizTaker({ quiz }: { quiz: { id: string; questions: Que
     setAnswers((prev) => ({ ...prev, [questionId]: answer }))
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     let correct = 0
     for (const q of quiz.questions) {
       if (answers[q.id]?.toLowerCase().trim() === q.answer.toLowerCase().trim()) {
@@ -30,6 +29,19 @@ export default function QuizTaker({ quiz }: { quiz: { id: string; questions: Que
     }
     setScore(correct)
     setSubmitted(true)
+
+    try {
+      await fetch(`/api/quizzes/${quiz.id}/attempt`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          quizId: quiz.id,
+          score: correct,
+          maxScore: quiz.questions.length,
+          answers,
+        }),
+      })
+    } catch {}
   }
 
   if (submitted) {
@@ -46,7 +58,7 @@ export default function QuizTaker({ quiz }: { quiz: { id: string; questions: Que
             : 'Keep practicing!'}
         </p>
         <button
-          onClick={() => router.refresh()}
+          onClick={() => window.location.reload()}
           className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
         >
           Try Again
