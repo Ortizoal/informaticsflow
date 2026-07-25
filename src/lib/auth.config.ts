@@ -36,8 +36,15 @@ export const authConfig: NextAuthConfig = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) { token.id = user.id; token.role = (user as any).role }
+    async jwt({ token, user, account }) {
+      if (user) {
+        if (account?.provider === 'google') {
+          const dbUser = await db.user.findUnique({ where: { email: user.email! } })
+          if (dbUser) { token.id = dbUser.id; token.role = dbUser.role }
+        } else {
+          token.id = user.id; token.role = (user as any).role
+        }
+      }
       return token
     },
     async session({ session, token }) {
