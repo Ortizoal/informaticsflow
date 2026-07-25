@@ -20,6 +20,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         title: String(title),
         description: description ? String(description) : null,
         sourceFileId: sourceFileId ? String(sourceFileId) : null,
+        createdBy: session.user.id,
         classId: id,
       },
     })
