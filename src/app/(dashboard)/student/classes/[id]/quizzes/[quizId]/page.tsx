@@ -21,7 +21,7 @@ export default async function StudentQuizPage({
   }
 
   const enrollment = await prisma.enrollment.findUnique({
-    where: { userId_classId: { userId: session?.user?.id || '', classId: params.id } },
+    where: { userId_classId: { userId: session?.user?.id || '', classId: id } },
   })
 
   if (!enrollment) {

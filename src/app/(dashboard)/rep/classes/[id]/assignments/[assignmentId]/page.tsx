@@ -52,12 +52,13 @@ export default async function AssignmentDetailPage({
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold">Groups</h2>
             {isRep && (
-              <Link
-                href={`/api/classes/${id}/assignments/${assignmentId}/export`}
-                className="bg-green-600 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-green-700 transition"
+              <button
+                className="bg-green-600 text-white px-4 py-1.5 rounded-lg text-sm font-medium opacity-50 cursor-not-allowed"
+                disabled
+                title="PDF export coming soon"
               >
                 Export PDF
-              </Link>
+              </button>
             )}
           </div>
 

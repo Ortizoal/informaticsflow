@@ -63,7 +63,7 @@ export default function NewQuizPage({ params }: { params: { id: string } }) {
 
     if (res.ok) {
       const data = await res.json()
-      router.push(`/rep/classes/${params.id}/quizzes/`)
+      router.push(`/rep/classes/${params.id}`)
     }
   }
 
