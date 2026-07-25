@@ -1,7 +1,7 @@
 ﻿'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 
 interface Question {
   text: string
@@ -12,8 +12,7 @@ interface Question {
 
 export default function NewQuizPage() {
   const router = useRouter()
-  const params = useParams()
-  const classId = classId as string
+  const classId = useParams().id as string
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [questions, setQuestions] = useState<Question[]>([])

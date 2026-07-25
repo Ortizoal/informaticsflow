@@ -5,8 +5,7 @@ import { useRouter, useParams } from 'next/navigation'
 
 export default function FilesPage() {
   const router = useRouter()
-  const params = useParams()
-  const classId = classId as string
+  const classId = useParams().id as string
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
   const [files, setFiles] = useState<any[]>([])
