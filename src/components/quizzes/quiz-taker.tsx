@@ -11,7 +11,6 @@ interface Question {
 }
 
 export default function QuizTaker({ quiz }: { quiz: { id: string; questions: Question[] } }) {
-  const router = useRouter()
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [submitted, setSubmitted] = useState(false)
   const [score, setScore] = useState(0)
