@@ -36,7 +36,7 @@ export default async function StudentDashboardPage() {
           {enrollments.map((enrollment) => (
             <Link
               key={enrollment.class.id}
-              href={`/student/classes/`}
+              href={`/student/classes/${enrollment.class.id}`}
               className="bg-white rounded-xl shadow-sm border p-6 hover:shadow-md transition"
             >
               <h2 className="text-lg font-semibold mb-2">{enrollment.class.name}</h2>

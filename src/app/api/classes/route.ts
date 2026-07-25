@@ -30,10 +30,21 @@ export async function POST(req: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   const session = await auth()
   if (!session?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const url = new URL(req.url)
+  const joinCode = url.searchParams.get('joinCode')
+
+  if (joinCode) {
+    const cls = await prisma.class.findFirst({
+      where: { joinCode: joinCode.toUpperCase() },
+      include: { _count: { select: { enrollments: true, assignments: true } } },
+    })
+    return NextResponse.json(cls ? [cls] : [])
   }
 
   const classes = await prisma.class.findMany({

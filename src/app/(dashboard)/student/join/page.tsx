@@ -14,11 +14,11 @@ export default function JoinClassPage() {
     setJoining(true)
     setError('')
 
-    // First find the class by join code
-    const classesRes = await fetch('/api/classes')
-    const classes = await classesRes.json()
+    const code = joinCode.toUpperCase()
 
-    const cls = classes.find((c: any) => c.joinCode === joinCode.toUpperCase())
+    const classesRes = await fetch(`/api/classes?joinCode=${code}`)
+    const classes = await classesRes.json()
+    const cls = classes[0]
 
     if (!cls) {
       setError('Invalid join code')
@@ -29,7 +29,7 @@ export default function JoinClassPage() {
     const res = await fetch(`/api/classes/${cls.id}/enroll`,  {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ joinCode: joinCode.toUpperCase() }),
+      body: JSON.stringify({ joinCode: code }),
     })
 
     if (res.ok) {
