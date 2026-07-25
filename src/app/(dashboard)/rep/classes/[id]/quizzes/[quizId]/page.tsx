@@ -6,7 +6,7 @@ import QuizTaker from '@/components/quizzes/quiz-taker'
 export default async function QuizDetailPage({
   params,
 }: {
-  params: { id: string; quizId: string }
+  params: Promise<{ id: string; quizId: string }>
 }) {
   const { id, quizId } = await params
   const session = await auth()
@@ -26,10 +26,36 @@ export default async function QuizDetailPage({
   const isRep = quiz.class.repId === session?.user?.id
 
   if (isRep) {
+    const attempts = await prisma.quizAttempt.findMany({
+      where: { quizId },
+      include: { user: { select: { name: true, email: true } } },
+      orderBy: { score: 'desc' },
+    })
+
     return (
       <div>
         <h1 className="text-2xl font-bold mb-4">{quiz.title}</h1>
         {quiz.description && <p className="text-gray-500 mb-6">{quiz.description}</p>}
+
+        <h2 className="text-lg font-semibold mb-3">Attempts ({attempts.length})</h2>
+        {attempts.length === 0 ? (
+          <p className="text-gray-400 text-sm mb-6">No attempts yet.</p>
+        ) : (
+          <div className="space-y-2 mb-8">
+            {attempts.map((a) => (
+              <div key={a.id} className="bg-white rounded-lg shadow-sm border p-3 flex items-center justify-between">
+                <div>
+                  <div className="text-sm font-medium">{a.user.name || a.user.email}</div>
+                  <div className="text-xs text-gray-400">{new Date(a.createdAt).toLocaleDateString()}</div>
+                </div>
+                <div className="text-sm font-semibold">
+                  {a.score} / {a.maxScore}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         <h2 className="text-lg font-semibold mb-3">Questions ({quiz.questions.length})</h2>
         <div className="space-y-3">
           {quiz.questions.map((q, i) => (
@@ -51,10 +77,32 @@ export default async function QuizDetailPage({
     )
   }
 
+  const pastAttempts = await prisma.quizAttempt.findMany({
+    where: { quizId, userId: session?.user?.id },
+    orderBy: { createdAt: 'desc' },
+  })
+
   return (
     <div>
       <h1 className="text-2xl font-bold mb-2">{quiz.title}</h1>
       {quiz.description && <p className="text-gray-500 mb-6">{quiz.description}</p>}
+
+      {pastAttempts.length > 0 && (
+        <div className="mb-6 bg-white rounded-xl shadow-sm border p-4">
+          <h2 className="text-sm font-semibold mb-2">Your Past Attempts</h2>
+          <div className="space-y-1">
+            {pastAttempts.map((a) => (
+              <div key={a.id} className="flex items-center justify-between text-sm">
+                <span className="text-gray-500">{new Date(a.createdAt).toLocaleDateString()}</span>
+                <span className="font-medium">
+                  {a.score} / {a.maxScore}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <QuizTaker quiz={quiz as any} />
     </div>
   )
