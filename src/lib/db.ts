@@ -5,6 +5,7 @@ export const db = {
     findUnique: (args: any) => prisma.user.findUnique(args),
     findMany: (args?: any) => prisma.user.findMany(args),
     create: (args: any) => prisma.user.create(args),
+    update: (args: any) => prisma.user.update(args),
   },
   class: {
     findUnique: (args: any) => prisma.class.findUnique(args),

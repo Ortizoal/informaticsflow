@@ -8,6 +8,10 @@ export default async function HomePage() {
     redirect('/login')
   }
 
+  if (session.user.role === 'unassigned') {
+    redirect('/choose-role')
+  }
+
   if (session.user.role === 'REP') {
     redirect('/rep')
   }

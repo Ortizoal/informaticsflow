@@ -55,7 +55,7 @@ export const authConfig: NextAuthConfig = {
               email,
               name: profile?.name as string || email.split('@')[0],
               image: profile?.image as string || null,
-              role: 'student',
+              role: 'unassigned',
             },
           })
         }
