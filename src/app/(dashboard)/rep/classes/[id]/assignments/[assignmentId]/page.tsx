@@ -2,6 +2,7 @@
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import GradeForm from './grade-form'
 
 export default async function AssignmentDetailPage({
   params,
@@ -32,8 +33,14 @@ export default async function AssignmentDetailPage({
 
   const isRep = assignment.class.repId === session?.user?.id
 
+  const submissions = await prisma.submission.findMany({
+    where: { assignmentId },
+    include: { user: { select: { id: true, name: true, email: true } } },
+    orderBy: { createdAt: 'desc' },
+  })
+
   return (
-    <div>
+    <div className="space-y-6">
       <div className="mb-6">
         <Link
           href={`/rep/classes/${id}`}
@@ -83,9 +90,39 @@ export default async function AssignmentDetailPage({
       )}
 
       {assignment.dueDate && (
-        <p className="text-sm text-gray-400 mt-6">
+        <p className="text-sm text-gray-400">
           Due: {new Date(assignment.dueDate).toLocaleDateString()}
         </p>
+      )}
+
+      {submissions.length > 0 && (
+        <div>
+          <h2 className="text-lg font-semibold mb-4">Submissions ({submissions.length})</h2>
+          <div className="space-y-3">
+            {submissions.map((sub) => (
+              <div key={sub.id} className="bg-white rounded-xl shadow-sm border p-4">
+                <div className="flex items-start justify-between mb-2">
+                  <div>
+                    <p className="text-sm font-medium">{sub.user.name || 'Unnamed'}</p>
+                    <p className="text-xs text-gray-400">{sub.user.email}</p>
+                  </div>
+                  <GradeForm
+                    classId={id}
+                    assignmentId={assignmentId}
+                    submissionId={sub.id}
+                    currentGrade={sub.grade}
+                  />
+                </div>
+                {sub.content && (
+                  <p className="text-sm text-gray-600 mt-2 whitespace-pre-wrap">{sub.content}</p>
+                )}
+                <p className="text-xs text-gray-400 mt-2">
+                  Submitted {new Date(sub.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   )
