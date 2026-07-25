@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import SubmissionForm from './submission-form'
 
 export default async function StudentAssignmentPage({
   params,
@@ -42,8 +43,13 @@ export default async function StudentAssignmentPage({
     g.members.some((m) => m.user.id === session?.user?.id)
   )
 
+  const existing = await prisma.submission.findUnique({
+    where: { assignmentId_userId: { assignmentId, userId: session?.user?.id || '' } },
+    select: { id: true, content: true, fileUrl: true, grade: true },
+  })
+
   return (
-    <div>
+    <div className="space-y-6">
       <Link
         href={`/student/classes/${id}`}
         className="text-sm text-blue-600 hover:underline mb-2 inline-block"
@@ -87,6 +93,8 @@ export default async function StudentAssignmentPage({
           </p>
         </div>
       )}
+
+      <SubmissionForm classId={id} assignmentId={assignmentId} existing={existing} />
     </div>
   )
 }
