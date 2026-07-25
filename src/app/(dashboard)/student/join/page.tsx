@@ -14,29 +14,37 @@ export default function JoinClassPage() {
     setJoining(true)
     setError('')
 
-    const code = joinCode.toUpperCase()
+    try {
+      const code = joinCode.toUpperCase()
 
-    const classesRes = await fetch(`/api/classes?joinCode=${code}`)
-    const classes = await classesRes.json()
-    const cls = classes[0]
+      const classesRes = await fetch(`/api/classes?joinCode=${code}`)
+      if (!classesRes.ok) {
+        const errData = await classesRes.json().catch(() => ({}))
+        throw new Error(errData.error || `Server error (${classesRes.status})`)
+      }
+      const classes = await classesRes.json()
+      const cls = classes[0]
 
-    if (!cls) {
-      setError('Invalid join code')
-      setJoining(false)
-      return
-    }
+      if (!cls) {
+        setError('Invalid join code')
+        setJoining(false)
+        return
+      }
 
-    const res = await fetch(`/api/classes/${cls.id}/enroll`,  {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ joinCode: code }),
-    })
+      const res = await fetch(`/api/classes/${cls.id}/enroll`,  {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ joinCode: code }),
+      })
 
-    if (res.ok) {
-      router.push(`/student/classes/${cls.id}`)
-    } else {
-      const data = await res.json()
-      setError(data.error || 'Failed to join')
+      if (res.ok) {
+        router.push(`/student/classes/${cls.id}`)
+      } else {
+        const data = await res.json().catch(() => ({}))
+        setError(data.error || 'Failed to join')
+      }
+    } catch (err: any) {
+      setError(err?.message || 'Something went wrong')
     }
     setJoining(false)
   }
