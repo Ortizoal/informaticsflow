@@ -31,7 +31,8 @@ export default function SubmissionForm({ classId, assignmentId, existing }: Prop
 
     const res = await fetch('/api/upload', { method: 'POST', body: fd })
     if (!res.ok) {
-      setError('Failed to upload file')
+      const data = await res.json().catch(() => ({}))
+      setError(data.error || 'Failed to upload file')
       setUploading(false)
       return
     }
