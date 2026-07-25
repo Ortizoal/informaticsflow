@@ -22,7 +22,6 @@ model User {
   enrollments   Enrollment[]
   groupMembers  GroupMember[]
   quizAttempts  QuizAttempt[]
-  submissions   Submission[]
 }
 
 model PasswordResetToken {
@@ -76,9 +75,8 @@ model Assignment {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  class       Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
-  groups      Group[]
-  submissions Submission[]
+  class  Class   @relation(fields: [classId], references: [id], onDelete: Cascade)
+  groups Group[]
 }
 
 model Group {
@@ -144,22 +142,6 @@ model Question {
   createdAt DateTime @default(now())
 
   quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
-}
-
-model Submission {
-  id           String   @id @default(cuid())
-  assignmentId String
-  userId       String
-  content      String?
-  fileUrl      String?
-  grade        Int?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  assignment Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
-  user       User       @relation(fields: [userId], references: [id])
-
-  @@unique([assignmentId, userId])
 }
 
 model QuizAttempt {
