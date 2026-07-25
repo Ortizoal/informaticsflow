@@ -6,7 +6,7 @@ import Link from 'next/link'
 export default async function AssignmentDetailPage({
   params,
 }: {
-  params: { id: string; assignmentId: string }
+  params: Promise<{ id: string; assignmentId: string }>
 }) {
   const { id, assignmentId } = await params
   const session = await auth()
