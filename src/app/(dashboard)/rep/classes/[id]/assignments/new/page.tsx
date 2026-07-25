@@ -7,6 +7,7 @@ export default function NewAssignmentPage({ params }: { params: { id: string } }
   const router = useRouter()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
+  const [dueDate, setDueDate] = useState('')
   const [groupCount, setGroupCount] = useState(0)
   const [groupSize, setGroupSize] = useState(0)
   const [createGroups, setCreateGroups] = useState(false)
@@ -22,6 +23,7 @@ export default function NewAssignmentPage({ params }: { params: { id: string } }
       body: JSON.stringify({
         title,
         description,
+        dueDate: dueDate || null,
         groupCount: createGroups ? groupCount : null,
         groupSize: createGroups ? groupSize : null,
       }),
@@ -62,6 +64,15 @@ export default function NewAssignmentPage({ params }: { params: { id: string } }
             onChange={(e) => setDescription(e.target.value)}
             className="w-full border rounded-lg px-3 py-2"
             rows={3}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
+          <input
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            className="w-full border rounded-lg px-3 py-2"
           />
         </div>
 

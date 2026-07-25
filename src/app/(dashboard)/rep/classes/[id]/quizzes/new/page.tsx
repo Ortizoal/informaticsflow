@@ -13,6 +13,7 @@ interface Question {
 export default function NewQuizPage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
   const [questions, setQuestions] = useState<Question[]>([])
   const [generating, setGenerating] = useState(false)
   const [genError, setGenError] = useState('')
@@ -64,7 +65,7 @@ export default function NewQuizPage({ params }: { params: { id: string } }) {
     const res = await fetch(`/api/classes/${params.id}/quizzes`,  {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, questions }),
+      body: JSON.stringify({ title, description, questions }),
     })
 
     if (res.ok) {
@@ -106,6 +107,15 @@ export default function NewQuizPage({ params }: { params: { id: string } }) {
             onChange={(e) => setTitle(e.target.value)}
             className="w-full border rounded-lg px-3 py-2"
             required
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Description (optional)</label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="w-full border rounded-lg px-3 py-2"
+            rows={2}
           />
         </div>
 

@@ -5,6 +5,21 @@ import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { put } from '@vercel/blob'
 
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const session = await auth()
+  if (!session?.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const files = await db.file.findMany({
+    where: { classId: id },
+    orderBy: { createdAt: 'desc' },
+  })
+
+  return NextResponse.json(files)
+}
+
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const session = await auth()

@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 export default function FilesPage({ params }: { params: { id: string } }) {
@@ -8,6 +8,13 @@ export default function FilesPage({ params }: { params: { id: string } }) {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
   const [files, setFiles] = useState<any[]>([])
+
+  useEffect(() => {
+    fetch(`/api/classes/${params.id}/files`)
+      .then((r) => r.json())
+      .then(setFiles)
+      .catch(() => {})
+  }, [params.id])
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
