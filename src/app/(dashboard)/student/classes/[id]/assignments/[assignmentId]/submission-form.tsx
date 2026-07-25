@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { upload } from '@vercel/blob/client'
 
 interface Props {
   classId: string
@@ -26,20 +27,17 @@ export default function SubmissionForm({ classId, assignmentId, existing }: Prop
     setUploading(true)
     setError('')
 
-    const fd = new FormData()
-    fd.append('file', file)
-
-    const res = await fetch('/api/upload', { method: 'POST', body: fd })
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}))
-      setError(data.error || 'Failed to upload file')
+    try {
+      const result = await upload(file.name, file, {
+        handleUploadUrl: '/api/upload',
+        access: 'public',
+      })
+      setFileUrl(result.downloadUrl)
+    } catch (err: any) {
+      setError(err?.message || 'Failed to upload file')
+    } finally {
       setUploading(false)
-      return
     }
-
-    const { downloadUrl } = await res.json()
-    setFileUrl(downloadUrl)
-    setUploading(false)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
