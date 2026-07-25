@@ -17,9 +17,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     const quiz = await prisma.quiz.create({
       data: {
-        title,
-        description,
-        sourceFileId: sourceFileId || null,
+        title: String(title),
+        description: description ? String(description) : null,
+        sourceFileId: sourceFileId ? String(sourceFileId) : null,
         classId: id,
       },
     })

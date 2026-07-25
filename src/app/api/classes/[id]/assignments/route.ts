@@ -23,10 +23,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     const assignment = await prisma.assignment.create({
       data: {
-        title,
-        description,
-        groupCount: groupCount || null,
-        groupSize: groupSize || null,
+        title: String(title),
+        description: description ? String(description) : null,
+        groupCount: groupCount ? Number(groupCount) : null,
+        groupSize: groupSize ? Number(groupSize) : null,
         dueDate: dueDate ? new Date(dueDate).toISOString() : null,
         createdBy: session.user.id,
         classId: id,
