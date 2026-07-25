@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string; assignmentId: string }> }) {
   const { id, assignmentId } = await params
@@ -9,7 +9,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const assignment = await db.assignment.findUnique({
+  const assignment = await prisma.assignment.findUnique({
     where: { id: assignmentId },
     select: { classId: true, class: { select: { repId: true } } },
   })
@@ -19,7 +19,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const isRep = assignment.class.repId === session.user.id
 
-  const submissions = await db.submission.findMany({
+  const submissions = await prisma.submission.findMany({
     where: { assignmentId, ...(isRep ? {} : { userId: session.user.id }) },
     include: isRep ? { user: { select: { id: true, name: true, email: true } } } : undefined,
     orderBy: { createdAt: 'desc' },
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const assignment = await db.assignment.findUnique({
+  const assignment = await prisma.assignment.findUnique({
     where: { id: assignmentId },
     select: { classId: true },
   })
@@ -43,14 +43,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
-  const enrollment = await db.enrollment.findUnique({
+  const enrollment = await prisma.enrollment.findUnique({
     where: { userId_classId: { userId: session.user.id, classId: id } },
   })
   if (!enrollment) {
     return NextResponse.json({ error: 'Not enrolled' }, { status: 403 })
   }
 
-  const existing = await db.submission.findUnique({
+  const existing = await prisma.submission.findUnique({
     where: { assignmentId_userId: { assignmentId, userId: session.user.id } },
   })
   if (existing) {
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   const { content, fileUrl } = await req.json()
 
-  const submission = await db.submission.create({
+  const submission = await prisma.submission.create({
     data: {
       assignmentId,
       userId: session.user.id,
@@ -80,14 +80,14 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const body = await req.json()
 
-  const submission = await db.submission.findUnique({
+  const submission = await prisma.submission.findUnique({
     where: { id: body.submissionId },
   })
   if (!submission || submission.assignmentId !== assignmentId) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
-  const assignment = await db.assignment.findUnique({
+  const assignment = await prisma.assignment.findUnique({
     where: { id: assignmentId },
     select: { classId: true, class: { select: { repId: true } } },
   })
@@ -103,7 +103,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ error: 'You can only edit your own submission' }, { status: 403 })
   }
 
-  const updated = await db.submission.update({
+  const updated = await prisma.submission.update({
     where: { id: body.submissionId },
     data: {
       ...(body.content !== undefined ? { content: body.content } : {}),
