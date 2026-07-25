@@ -9,23 +9,43 @@ export default async function DashboardLayout({ children }: { children: React.Re
     redirect('/login')
   }
 
+  const isRep = session.user.role === 'REP'
+  const dashboardHref = isRep ? '/rep' : '/student'
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/" className="text-xl font-bold text-blue-600">
+          <Link href={dashboardHref} className="text-xl font-bold text-blue-600">
             ClassFlow
           </Link>
           <nav className="flex items-center gap-4">
-            {session.user.role === 'REP' && (
-              <Link
-                href="/rep/classes/new"
-                className="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
-              >
-                New Class
-              </Link>
+            {isRep ? (
+              <>
+                <Link href="/rep" className="text-sm text-gray-600 hover:text-gray-900">
+                  Dashboard
+                </Link>
+                <Link
+                  href="/rep/classes/new"
+                  className="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
+                >
+                  New Class
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/student" className="text-sm text-gray-600 hover:text-gray-900">
+                  Dashboard
+                </Link>
+                <Link
+                  href="/student/join"
+                  className="bg-green-600 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-green-700 transition"
+                >
+                  Join Class
+                </Link>
+              </>
             )}
-            <span className="text-sm text-gray-500">{session.user.name || session.user.email}</span>
+            <span className="text-sm text-gray-500 hidden sm:inline">{session.user.name || session.user.email}</span>
             <Link href="/api/auth/signout" className="text-sm text-gray-600 hover:text-gray-900">
               Sign Out
             </Link>

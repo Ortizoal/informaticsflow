@@ -6,7 +6,7 @@ export default async function RepDashboardPage() {
   const session = await auth()
   const classes = await prisma.class.findMany({
     where: { repId: session?.user?.id },
-    include: { _count: { select: { enrollments: true, assignments: true, files: true } } },
+    include: { _count: { select: { enrollments: true, assignments: true, quizzes: true, files: true } } },
     orderBy: { createdAt: 'desc' },
   })
 
@@ -42,6 +42,7 @@ export default async function RepDashboardPage() {
               <div className="flex gap-4 text-sm text-gray-500">
                 <span>{cls._count.enrollments} students</span>
                 <span>{cls._count.assignments} assignments</span>
+                <span>{cls._count.quizzes} quizzes</span>
                 <span>{cls._count.files} files</span>
               </div>
             </Link>
