@@ -60,9 +60,9 @@ export default async function RepClassDetailPage({
         </Link>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-3">
         <div>
-          <h2 className="text-lg font-semibold mb-3">Recent Assignments</h2>
+          <h2 className="text-lg font-semibold mb-3">Assignments</h2>
           {cls.assignments.length === 0 ? (
             <p className="text-gray-400 text-sm">No assignments yet</p>
           ) : (
@@ -77,6 +77,25 @@ export default async function RepClassDetailPage({
                   {a.dueDate && (
                     <div className="text-xs text-gray-400">Due: {new Date(a.dueDate).toLocaleDateString()}</div>
                   )}
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div>
+          <h2 className="text-lg font-semibold mb-3">Quizzes</h2>
+          {cls.quizzes.length === 0 ? (
+            <p className="text-gray-400 text-sm">No quizzes yet</p>
+          ) : (
+            <div className="space-y-2">
+              {cls.quizzes.map((q) => (
+                <Link
+                  key={q.id}
+                  href={`/rep/classes/${id}/quizzes/${q.id}`}
+                  className="block bg-white rounded-lg shadow-sm border p-3 hover:shadow-md transition"
+                >
+                  <div className="font-medium">{q.title}</div>
                 </Link>
               ))}
             </div>
