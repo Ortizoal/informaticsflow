@@ -1,20 +1,22 @@
 ﻿'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 
-export default function FilesPage({ params }: { params: { id: string } }) {
+export default function FilesPage() {
   const router = useRouter()
+  const params = useParams()
+  const classId = classId as string
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
   const [files, setFiles] = useState<any[]>([])
 
   useEffect(() => {
-    fetch(`/api/classes/${params.id}/files`)
+    fetch(`/api/classes/${classId}/files`)
       .then((r) => r.json())
       .then(setFiles)
       .catch(() => {})
-  }, [params.id])
+  }, [classId])
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -32,7 +34,7 @@ export default function FilesPage({ params }: { params: { id: string } }) {
     const formData = new FormData()
     formData.append('file', file)
 
-    const res = await fetch(`/api/classes/${params.id}/files`,  {
+    const res = await fetch(`/api/classes/${classId}/files`,  {
       method: 'POST',
       body: formData,
     })

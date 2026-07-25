@@ -1,10 +1,12 @@
 ﻿'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 
-export default function NewAssignmentPage({ params }: { params: { id: string } }) {
+export default function NewAssignmentPage() {
   const router = useRouter()
+  const params = useParams()
+  const classId = classId as string
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [dueDate, setDueDate] = useState('')
@@ -17,7 +19,7 @@ export default function NewAssignmentPage({ params }: { params: { id: string } }
     e.preventDefault()
     setError('')
 
-    const res = await fetch(`/api/classes/${params.id}/assignments`,  {
+    const res = await fetch(`/api/classes/${classId}/assignments`,  {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -31,7 +33,7 @@ export default function NewAssignmentPage({ params }: { params: { id: string } }
 
     if (res.ok) {
       const data = await res.json()
-      router.push(`/rep/classes/${params.id}`)
+      router.push(`/rep/classes/${classId}`)
     } else {
       const data = await res.json()
       setError(JSON.stringify(data))

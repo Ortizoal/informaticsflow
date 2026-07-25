@@ -10,8 +10,10 @@ interface Question {
   answer: string
 }
 
-export default function NewQuizPage({ params }: { params: { id: string } }) {
+export default function NewQuizPage() {
   const router = useRouter()
+  const params = useParams()
+  const classId = classId as string
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [questions, setQuestions] = useState<Question[]>([])
@@ -42,7 +44,7 @@ export default function NewQuizPage({ params }: { params: { id: string } }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          classId: params.id,
+          classId: classId,
           type: 'quiz',
           count: 5,
         }),
@@ -64,14 +66,14 @@ export default function NewQuizPage({ params }: { params: { id: string } }) {
     e.preventDefault()
     setSubmitError('')
 
-    const res = await fetch(`/api/classes/${params.id}/quizzes`,  {
+    const res = await fetch(`/api/classes/${classId}/quizzes`,  {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title, description, questions }),
     })
 
     if (res.ok) {
-      router.push(`/rep/classes/${params.id}`)
+      router.push(`/rep/classes/${classId}`)
     } else {
       const data = await res.json().catch(() => ({}))
       setSubmitError(data.error || 'Failed to save quiz')
