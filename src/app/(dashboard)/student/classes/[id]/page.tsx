@@ -8,8 +8,7 @@ export default async function StudentClassDetailPage({
 }: {
   params: { id: string }
 }) {
-  const id = params.id
-  if (!id) return notFound()
+  const { id } = await params
   const session = await auth()
 
   const cls = await prisma.class.findUnique({

@@ -8,17 +8,18 @@ export default async function QuizDetailPage({
 }: {
   params: { id: string; quizId: string }
 }) {
+  const { id, quizId } = await params
   const session = await auth()
 
   const quiz = await prisma.quiz.findUnique({
-    where: { id: params.quizId },
+    where: { id: quizId },
     include: {
       questions: true,
       class: { select: { name: true, repId: true } },
     },
   })
 
-  if (!quiz || quiz.classId !== params.id) {
+  if (!quiz || quiz.classId !== id) {
     notFound()
   }
 

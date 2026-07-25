@@ -8,10 +8,11 @@ export default async function AssignmentDetailPage({
 }: {
   params: { id: string; assignmentId: string }
 }) {
+  const { id, assignmentId } = await params
   const session = await auth()
 
   const assignment = await prisma.assignment.findUnique({
-    where: { id: params.assignmentId },
+    where: { id: assignmentId },
     include: {
       groups: {
         include: {
@@ -25,7 +26,7 @@ export default async function AssignmentDetailPage({
     },
   })
 
-  if (!assignment || assignment.classId !== params.id) {
+  if (!assignment || assignment.classId !== id) {
     notFound()
   }
 
@@ -35,7 +36,7 @@ export default async function AssignmentDetailPage({
     <div>
       <div className="mb-6">
         <Link
-          href={`/rep/classes/${params.id}`}
+          href={`/rep/classes/${id}`}
           className="text-sm text-blue-600 hover:underline mb-2 inline-block"
         >
           &larr; Back to class
@@ -52,7 +53,7 @@ export default async function AssignmentDetailPage({
             <h2 className="text-lg font-semibold">Groups</h2>
             {isRep && (
               <Link
-                href={`/api/classes/${params.id}/assignments/${params.assignmentId}/export`}
+                href={`/api/classes/${id}/assignments/${assignmentId}/export`}
                 className="bg-green-600 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-green-700 transition"
               >
                 Export PDF
