@@ -1,7 +1,7 @@
 ﻿import { NextAuthConfig } from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
 import Google from 'next-auth/providers/google'
-import { db } from './db'
+import { prisma } from './prisma'
 import { timingSafeEqual, scryptSync, randomBytes } from 'crypto'
 
 function verifyPassword(password: string, hash: string): boolean {
@@ -23,7 +23,7 @@ export const authConfig: NextAuthConfig = {
         if (!credentials?.email || !credentials?.password) return null
         const email = credentials.email as string
         const password = credentials.password as string
-        const user = await db.user.findUnique({ where: { email } })
+        const user = await prisma.user.findUnique({ where: { email } })
         if (!user || !user.password) return null
         const isValid = verifyPassword(password, user.password)
         if (!isValid) return null
@@ -45,22 +45,27 @@ export const authConfig: NextAuthConfig = {
       return session
     },
     async signIn({ account, profile }) {
-      if (account?.provider === 'google') {
-        const email = profile?.email as string
-        if (!email) return false
-        const existing = await db.user.findUnique({ where: { email } })
-        if (!existing) {
-          await db.user.create({
-            data: {
-              email,
-              name: profile?.name as string || email.split('@')[0],
-              image: profile?.image as string || null,
-              role: 'unassigned',
-            },
-          })
+      try {
+        if (account?.provider === 'google') {
+          const email = profile?.email as string
+          if (!email) return false
+          const existing = await prisma.user.findUnique({ where: { email } })
+          if (!existing) {
+            await prisma.user.create({
+              data: {
+                email,
+                name: profile?.name as string || email.split('@')[0],
+                image: profile?.image as string || null,
+                role: 'unassigned',
+              },
+            })
+          }
         }
+        return true
+      } catch (e) {
+        console.error('signIn error:', e)
+        return false
       }
-      return true
     },
   },
   pages: { signIn: '/login' },
