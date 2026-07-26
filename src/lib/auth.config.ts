@@ -45,27 +45,23 @@ export const authConfig: NextAuthConfig = {
       return session
     },
     async signIn({ account, profile }) {
-      try {
-        if (account?.provider === 'google') {
-          const email = profile?.email as string
-          if (!email) return false
-          const existing = await prisma.user.findUnique({ where: { email } })
-          if (!existing) {
-            await prisma.user.create({
-              data: {
-                email,
-                name: profile?.name as string || email.split('@')[0],
-                image: profile?.image as string || null,
-                role: 'unassigned',
-              },
-            })
-          }
+      console.log('signIn called', account?.provider, profile?.email)
+      if (account?.provider === 'google') {
+        const email = profile?.email as string
+        if (!email) return false
+        const existing = await prisma.user.findUnique({ where: { email } })
+        if (!existing) {
+          await prisma.user.create({
+            data: {
+              email,
+              name: profile?.name as string || email.split('@')[0],
+              image: profile?.image as string || null,
+              role: 'unassigned',
+            },
+          })
         }
-        return true
-      } catch (e) {
-        console.error('signIn error:', e)
-        return false
       }
+      return true
     },
   },
   pages: { signIn: '/login' },
